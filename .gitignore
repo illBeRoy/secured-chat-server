@@ -90,3 +90,6 @@ ENV/
 
 # intellij stuff
 .idea
+
+# project specific ignored
+www/
