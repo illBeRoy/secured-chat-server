@@ -1,11 +1,9 @@
 import functools
 import flask
 
-from endpoint import HTTP_METHODS
+from endpoint import HTTP_METHODS, Endpoint
+from parsers import BodyParser, HeadersParser, QuerystringParser
 from exception import RestfulException
-
-from endpoint import *
-from exception import *
 
 
 class Server(object):
@@ -31,10 +29,10 @@ class Server(object):
                                    view_func=functools.partial(self._endpoint_handler, cls, method),
                                    methods=[method])
 
-    def _endpoint_handler(self, endpoint_cls, method):
+    def _endpoint_handler(self, endpoint_cls, method, **uri_params):
         try:
             endpoint_instance = endpoint_cls()
-            return flask.jsonify(getattr(endpoint_instance, method)(flask.request))
+            return flask.jsonify(getattr(endpoint_instance, method)(flask.request, **uri_params))
 
         except RestfulException as err:
             return self._error_handler(err.status, err.message, err)

@@ -3,11 +3,16 @@ import server
 
 class Endpoint(server.Endpoint):
 
-    url = '/users'
+    url = '/users/<int:id>'
 
-    def post(self, request):
-        return self.a()
-
-    def a(self):
-        #request = inspect.getouterframes(inspect.currentframe())[1][0].f_locals['request']
-        return {'method': "ok"}
+    def post(self, request, id=0):
+        querystring_parser = server.QuerystringParser()
+        querystring_parser.add_argument('age', required=True)
+        headers = querystring_parser.parse_args()
+        #
+        # body_parser = server.BodyParser()
+        # body_parser.add_argument('age', type=int, required=True)
+        # body = body_parser.parse_args()
+        #
+        # return {'roysom': headers.roysom, 'chernima': headers.chernima, 'avivbh': headers.avivbh, 'age': body.age}
+        return {'a': headers.age}
