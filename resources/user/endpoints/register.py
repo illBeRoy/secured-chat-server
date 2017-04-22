@@ -1,18 +1,19 @@
 import server
+import resources.user.models
 
 
 class Endpoint(server.Endpoint):
 
-    url = '/users/<int:id>'
+    url = '/users'
 
-    def post(self, request, id=0):
-        querystring_parser = server.QuerystringParser()
-        querystring_parser.add_argument('age', required=True)
-        headers = querystring_parser.parse_args()
-        #
-        # body_parser = server.BodyParser()
-        # body_parser.add_argument('age', type=int, required=True)
-        # body = body_parser.parse_args()
-        #
-        # return {'roysom': headers.roysom, 'chernima': headers.chernima, 'avivbh': headers.avivbh, 'age': body.age}
-        return {'a': headers.age}
+    def post(self, request):
+        body_parser = server.BodyParser()
+        body_parser.add_argument('username', help='unique name of user', required=True)
+        body_parser.add_argument('password', help='desired password', required=True)
+        body_parser.add_argument('private_key', help='secret rsa key of user (encrypted)', required=True)
+        body_parser.add_argument('public_key', help='public rsa key of user (plain)', required=True)
+        args = body_parser.parse_args()
+
+        user = resources.user.models.User(args.username, args.password, args.private_key, args.public_key)
+
+        user.update()

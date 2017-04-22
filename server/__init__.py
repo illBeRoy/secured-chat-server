@@ -1,9 +1,11 @@
 import functools
 import flask
+import sqlalchemy
 
 from endpoint import HTTP_METHODS, Endpoint
 from parsers import BodyParser, HeadersParser, QuerystringParser
 from exception import RestfulException
+from model import Model, ModelField, ModelTypes
 
 
 class Server(object):
@@ -11,16 +13,31 @@ class Server(object):
     def __init__(self, *args, **kwargs):
         self._app = flask.Flask(*args, **kwargs)
         self._app.errorhandler(404)(functools.partial(self._error_handler, 404, 'not found'))
+        self._sqlengine = None
 
     def run(self, port, debug=False):
+        # initialize sql
+        Model.metadata.create_all(self._sqlengine)
+
+        # start flask server
         self._app.run('0.0.0.0', port, debug)
 
+    def use_db(self, url):
+        self._sqlengine = sqlalchemy.create_engine(url)
+
     def use_resource(self, resource):
+        # add endpoints
         for endpoint in dir(resource.endpoints):
             endpoint_module = getattr(resource.endpoints, endpoint)
             if hasattr(endpoint_module, 'Endpoint'):
                 endpoint_class = getattr(endpoint_module, 'Endpoint')
-                self._register_endpoint(endpoint, endpoint_class)
+                self._register_endpoint('{0}.{1}'.format(resource, endpoint), endpoint_class)
+
+        # prepare models
+        for model in dir(resource.models):
+            possible_model_class = getattr(resource.models, model)
+            if isinstance(possible_model_class, Model):
+                possible_model_class.__tablename__ = '{0}s'.format(possible_model_class.__name__.lower())
 
     def _register_endpoint(self, name, cls):
         for method in HTTP_METHODS:
