@@ -7,6 +7,7 @@ class Endpoint(server.Endpoint):
     url = '/users'
 
     def post(self):
+        # parse request
         body_parser = server.BodyParser()
         body_parser.add_argument('username', help='unique name of user', required=True)
         body_parser.add_argument('password', help='desired password', required=True)
@@ -14,13 +15,15 @@ class Endpoint(server.Endpoint):
         body_parser.add_argument('public_key', help='public rsa key of user (plain)', required=True)
         args = body_parser.parse_args()
 
+        # instantiate new user
         user = resources.user.models.User(args.username, args.password, args.private_key, args.public_key)
-
         self.session.add(user)
 
+        # attempt to commit
         try:
             self.session.commit()
-        except:
-            raise server.RestfulException(400, 'malformed data, cannot create user')
+        except server.IntegrityError:
+            raise server.RestfulException(400, resources.user.models.User.integrity_fail_reason)
 
+        # return success
         return {'result': 'created'}, 201

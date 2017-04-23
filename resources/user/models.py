@@ -12,6 +12,8 @@ class User(server.Model):
     private_key = server.ModelField(server.ModelTypes.String(4096))
     public_key = server.ModelField(server.ModelTypes.String(4096))
 
+    integrity_fail_reason = 'username is already in use'
+
     def __init__(self, username, password, private_key, public_key):
         self.username = username
         self.salt = self._create_salt()

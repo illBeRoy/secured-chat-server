@@ -6,7 +6,7 @@ def authenticate(func):
     '''
     The authentication decorator is meant for resources which would like to authenticate an incoming request.
     
-    If successful, a `user` kwarg is supplied to the endpoint.
+    If successful, a `user` object will be attached to the instance.
      
     :param func: endpoint handler
     '''
@@ -21,7 +21,9 @@ def authenticate(func):
             user = self.session.query(resources.user.models.User).filter(username=args.x_user_name).limit(1).all()[0]
 
             if user.check_password(args.x_user_token):
-                return func(*args, user=user, **kwargs)
+                self.auth = object()
+                self.auth.user = user
+                return func(self, *args, **kwargs)
             else:
                 raise Exception('wrong password')
         except:

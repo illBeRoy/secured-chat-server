@@ -1,6 +1,7 @@
 import sqlalchemy.types as ModelTypes
 import sqlalchemy.ext.declarative as _declerative
 from sqlalchemy.schema import Column as ModelField
+from sqlalchemy.exc import IntegrityError
 
 
 class _Base(object):

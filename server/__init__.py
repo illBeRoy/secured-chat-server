@@ -6,7 +6,7 @@ import sqlalchemy.orm
 from endpoint import HTTP_METHODS, Endpoint
 from parsers import BodyParser, HeadersParser, QuerystringParser
 from exception import RestfulException
-from model import Model, ModelField, ModelTypes
+from model import Model, ModelField, ModelTypes, IntegrityError
 
 
 class Server(object):
