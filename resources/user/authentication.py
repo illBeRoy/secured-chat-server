@@ -28,12 +28,15 @@ def authenticate(func):
             # check password
             if user.check_password(header_args.x_user_token):
                 self.auth = Auth(user=user)
-                return func(self, *args, **kwargs)
             else:
                 raise Exception('wrong password')
-        except Exception as err:
+
+        except:
             # if failed for any reason, raise unauthorized
             raise server.RestfulException(401, 'unauthorized')
+
+        finally:
+            return func(self, *args, **kwargs)
 
     return wrapped
 

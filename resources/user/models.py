@@ -12,7 +12,8 @@ class User(server.Model):
     private_key = server.ModelField(server.ModelTypes.String(4096))
     public_key = server.ModelField(server.ModelTypes.String(4096))
 
-    integrity_fail_reason = 'username is already in use'
+    renders_fields = ['username', 'public_key']
+    integrity_fail_reasons = 'username is already in use'
 
     def __init__(self, username, password, private_key, public_key):
         self.username = username
@@ -27,11 +28,19 @@ class User(server.Model):
 
         return False
 
+    def render(self, with_private_fields=False, **kwargs):
+        user = super(User, self).render(**kwargs)
+
+        if with_private_fields:
+            user['private_key'] = self.private_key
+
+        return user
+
     def _create_salt(self):
         '''
-        Generates a base64 encoded 32bit long cryptographically random salt.
+        Generates a base64 encoded 128bit long cryptographically random salt.
         '''
-        return base64.b64encode(os.urandom(32))
+        return base64.b64encode(os.urandom(16))
 
     def _hash_with_salt(self, str, salt):
         '''

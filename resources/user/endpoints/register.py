@@ -23,7 +23,7 @@ class Endpoint(server.Endpoint):
         try:
             self.session.commit()
         except server.IntegrityError:
-            raise server.RestfulException(400, resources.user.models.User.integrity_fail_reason)
+            raise server.RestfulException(400, resources.user.models.User.integrity_fail_reasons)
 
         # return success
-        return {'result': 'created'}, 201
+        return user.render(), 201

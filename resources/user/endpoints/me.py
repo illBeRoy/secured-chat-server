@@ -8,4 +8,4 @@ class Endpoint(server.Endpoint):
 
     @authenticate
     def get(self):
-        return self.auth.user.username
+        return self.auth.user.render(with_private_fields=True)
