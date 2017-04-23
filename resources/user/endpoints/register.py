@@ -6,7 +6,7 @@ class Endpoint(server.Endpoint):
 
     url = '/users'
 
-    def post(self, request):
+    def post(self):
         body_parser = server.BodyParser()
         body_parser.add_argument('username', help='unique name of user', required=True)
         body_parser.add_argument('password', help='desired password', required=True)
@@ -16,4 +16,11 @@ class Endpoint(server.Endpoint):
 
         user = resources.user.models.User(args.username, args.password, args.private_key, args.public_key)
 
-        user.update()
+        self.session.add(user)
+
+        try:
+            self.session.commit()
+        except:
+            raise server.RestfulException(400, 'malformed data, cannot create user')
+
+        return {'result': 'created'}, 201

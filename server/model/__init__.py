@@ -1,7 +1,6 @@
 import sqlalchemy.types as ModelTypes
 import sqlalchemy.ext.declarative as _declerative
 from sqlalchemy.schema import Column as ModelField
-from sqlalchemy.orm import validates as _validates
 
 
 class _Base(object):

@@ -1,6 +1,7 @@
 import functools
 import flask
 import sqlalchemy
+import sqlalchemy.orm
 
 from endpoint import HTTP_METHODS, Endpoint
 from parsers import BodyParser, HeadersParser, QuerystringParser
@@ -14,6 +15,7 @@ class Server(object):
         self._app = flask.Flask(*args, **kwargs)
         self._app.errorhandler(404)(functools.partial(self._error_handler, 404, 'not found'))
         self._sqlengine = None
+        self._session = None
 
     def run(self, port, debug=False):
         # initialize sql
@@ -24,6 +26,7 @@ class Server(object):
 
     def use_db(self, url):
         self._sqlengine = sqlalchemy.create_engine(url)
+        self._session = sqlalchemy.orm.sessionmaker(bind=self._sqlengine)
 
     def use_resource(self, resource):
         # add endpoints
@@ -47,15 +50,49 @@ class Server(object):
                                    methods=[method])
 
     def _endpoint_handler(self, endpoint_cls, method, **uri_params):
+        request = flask.request
+        session = self._session()
         try:
+            # create instance and attach fields
             endpoint_instance = endpoint_cls()
-            return flask.jsonify(getattr(endpoint_instance, method)(flask.request, **uri_params))
+            endpoint_instance.request = request
+            endpoint_instance.session = session
+
+            # run endpoint handler
+            response = getattr(endpoint_instance, method)(**uri_params)
+
+            # commit session and close
+            session.commit()
+            session.close()
+
+            # return the outcome
+            return self._render_response(response)
 
         except RestfulException as err:
+            # rollback any changes
+            session.rollback()
+            session.close()
+
+            # return rendered exception
             return self._error_handler(err.status, err.message, err)
 
         except Exception as err:
+            # rollback any changes
+            session.rollback()
+            session.close()
+
+            # return rendered exception with 500
             return self._error_handler(500, err.message, err)
 
     def _error_handler(self, status, message, err=None):
         return flask.jsonify({'status': status, 'message': message}), status
+
+    def _render_response(self, response):
+        if isinstance(response, tuple):
+            response = list(response)
+            response[0] = flask.jsonify(response[0])
+            response = tuple(response)
+        else:
+            response = flask.jsonify(response)
+
+        return response
