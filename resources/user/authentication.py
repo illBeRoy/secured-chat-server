@@ -1,5 +1,6 @@
 import server
 import resources.user.models
+import collections
 
 
 def authenticate(func):
@@ -12,21 +13,39 @@ def authenticate(func):
     '''
 
     def wrapped(self, *args, **kwargs):
+        # parse headers
         header_parser = server.HeadersParser()
         header_parser.add_argument('x-user-name', help='name of the user to authenticate', required=True)
         header_parser.add_argument('x-user-token', help='authentication token as set in registration', required=True)
-        args = header_parser.parse_args()
+        header_args = header_parser.parse_args()
 
         try:
-            user = self.session.query(resources.user.models.User).filter(username=args.x_user_name).limit(1).all()[0]
+            # try to get user
+            user = self.session.query(resources.user.models.User) \
+                               .filter(resources.user.models.User.username == header_args.x_user_name) \
+                               .limit(1).all()[0]
 
-            if user.check_password(args.x_user_token):
-                self.auth = object()
-                self.auth.user = user
+            # check password
+            if user.check_password(header_args.x_user_token):
+                self.auth = Auth(user=user)
                 return func(self, *args, **kwargs)
             else:
                 raise Exception('wrong password')
-        except:
+        except Exception as err:
+            # if failed for any reason, raise unauthorized
             raise server.RestfulException(401, 'unauthorized')
 
     return wrapped
+
+
+class Auth(object):
+    '''
+    A struct that contains authentication information, to be used by the endpoint.
+    '''
+
+    def __init__(self, user=None):
+        self._user = user
+
+    @property
+    def user(self):
+        return self._user
