@@ -17,16 +17,16 @@ def authenticate(func):
         header_parser = server.HeadersParser()
         header_parser.add_argument('x-user-name', help='name of the user to authenticate', required=True)
         header_parser.add_argument('x-user-token', help='authentication token as set in registration', required=True)
-        header_args = header_parser.parse_args()
+        headers = header_parser.parse_args()
 
         try:
             # try to get user
             user = self.session.query(resources.user.models.User) \
-                               .filter(resources.user.models.User.username == header_args.x_user_name) \
+                               .filter(resources.user.models.User.username == headers.x_user_name) \
                                .limit(1).all()[0]
 
             # check password
-            if user.check_password(header_args.x_user_token):
+            if user.check_password(headers.x_user_token):
                 self.auth = Auth(user=user)
             else:
                 raise Exception('wrong password')
@@ -35,8 +35,7 @@ def authenticate(func):
             # if failed for any reason, raise unauthorized
             raise server.RestfulException(401, 'unauthorized')
 
-        finally:
-            return func(self, *args, **kwargs)
+        return func(self, *args, **kwargs)
 
     return wrapped
 

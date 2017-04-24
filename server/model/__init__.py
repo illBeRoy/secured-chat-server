@@ -1,7 +1,12 @@
+from sqlalchemy import ForeignKey
 import sqlalchemy.types as ModelTypes
 import sqlalchemy.ext.declarative as _declerative
 from sqlalchemy.schema import Column as ModelField
 from sqlalchemy.exc import IntegrityError
+
+
+# export foreign key under types
+ModelTypes.ForeignKey = ForeignKey
 
 
 class _Base(object):
@@ -16,8 +21,12 @@ class _Base(object):
     def __tablename__(cls):
         return '{0}s'.format(cls.__name__.lower())
 
-    # an inheriting class can override this list with the name of fields it should render
+    # inheriting classes can override this list with the name of fields it should render
     renders_fields = []
+
+    # inheriting classes can override this string with possible reasons for integrity exceptions,
+    # so endpoints can catch such exceptions and use this string to describe the possible reasons.
+    integrity_fail_reasons = ''
 
     # all models have an auto-incrementing integer id as primary key
     id = ModelField(ModelTypes.Integer, primary_key=True, autoincrement=True)

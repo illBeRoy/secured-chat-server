@@ -56,11 +56,13 @@ class _RequestParser(object):
                 arg_val = arg_rule['default']
 
             if arg_val is None and arg_rule['required']:
-                raise server.exception.RestfulException(400, 'field "{0}": required in {1} but not found'.format(arg_name, self.source))
+                raise server.exception.RestfulException(400, 'missing field "{0}" in {1}: {2}'.format(arg_name,
+                                                                                                      self.source,
+                                                                                                      arg_rule['help']))
 
             if arg_val is not None and not isinstance(arg_val, arg_rule['type']):
                 raise server.exception.RestfulException(400, 'field "{0}": wrong type. expected: {1}'.format(arg_name,
-                                                                                                           arg_rule['type'].__name__))
+                                                                                                             arg_rule['type'].__name__))
 
             argument_values.append(arg_val)
 

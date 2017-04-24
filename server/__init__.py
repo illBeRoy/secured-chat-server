@@ -52,6 +52,7 @@ class Server(object):
     def _endpoint_handler(self, endpoint_cls, method, **uri_params):
         request = flask.request
         session = self._session()
+
         try:
             # create instance and attach fields
             endpoint_instance = endpoint_cls()
