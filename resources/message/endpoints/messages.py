@@ -71,7 +71,7 @@ class Endpoint(server.Endpoint):
 
         deleted_count = self.session.query(resources.message.models.Message) \
                                     .filter(resources.message.models.Message.to_user == self.auth.user.id,
-                                            resources.message.models.Message.sent_at <= query_timestamp) \
+                                            resources.message.models.Message.sent_at < query_timestamp) \
                                     .delete()
 
         return {'result': 'success', 'deleted': deleted_count}

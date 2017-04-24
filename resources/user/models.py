@@ -1,4 +1,5 @@
 import os
+import re
 import base64
 import hashlib
 import server
@@ -13,9 +14,13 @@ class User(server.Model):
     public_key = server.ModelField(server.ModelTypes.String(4096))
 
     renders_fields = ['username', 'public_key']
+    assert_fail_reasons = 'bad username, should be alphanumeric, not shorter than 3 and not longer than 32 characters'
     integrity_fail_reasons = 'username is already in use'
+    allowed_usernames = re.compile('^[a-zA-Z0-9_-]{3,32}$')
 
     def __init__(self, username, password, private_key, public_key):
+        assert User.allowed_usernames.match(username)
+
         self.username = username
         self.salt = self._create_salt()
         self.password = self._hash_with_salt(password, self.salt)

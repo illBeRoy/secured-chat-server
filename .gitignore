@@ -93,3 +93,4 @@ ENV/
 
 # project specific ignored
 www/
+test/tmp

@@ -13,13 +13,14 @@ def authenticate(func):
     '''
 
     def wrapped(self, *args, **kwargs):
-        # parse headers
-        header_parser = server.HeadersParser()
-        header_parser.add_argument('x-user-name', help='name of the user to authenticate', required=True)
-        header_parser.add_argument('x-user-token', help='authentication token as set in registration', required=True)
-        headers = header_parser.parse_args()
-
         try:
+            # parse headers
+            header_parser = server.HeadersParser()
+            header_parser.add_argument('x-user-name', help='name of the user to authenticate', required=True)
+            header_parser.add_argument('x-user-token', help='authentication token as set in registration',
+                                       required=True)
+            headers = header_parser.parse_args()
+
             # try to get user
             user = self.session.query(resources.user.models.User) \
                                .filter(resources.user.models.User.username == headers.x_user_name) \

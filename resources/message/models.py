@@ -10,7 +10,7 @@ class Message(server.Model):
     contents = server.ModelField(server.ModelTypes.String(4096))
     sent_at = server.ModelField(server.ModelTypes.Integer)
 
-    renders_fields = ['from_user', 'to_user', 'contents', 'sent_at']
+    renders_fields = ['contents', 'sent_at']
     integrity_fail_reasons = 'message is either sent by or sent to nonexistent users'
 
     def __init__(self, from_user, to_user, contents):

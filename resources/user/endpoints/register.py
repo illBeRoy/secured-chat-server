@@ -15,15 +15,17 @@ class Endpoint(server.Endpoint):
         body_parser.add_argument('public_key', help='public rsa key of user (plain)', required=True)
         body = body_parser.parse_args()
 
-        # instantiate new user
-        user = resources.user.models.User(body.username, body.password, body.private_key, body.public_key)
-        self.session.add(user)
-
-        # attempt to commit
+        # create user
         try:
+            user = resources.user.models.User(body.username, body.password, body.private_key, body.public_key)
+            self.session.add(user)
             self.session.commit()
+
         except server.IntegrityError:
             raise server.RestfulException(400, resources.user.models.User.integrity_fail_reasons)
+
+        except AssertionError:
+            raise server.RestfulException(400, resources.user.models.User.assert_fail_reasons)
 
         # return success
         return user.render(), 201
