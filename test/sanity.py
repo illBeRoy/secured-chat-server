@@ -33,7 +33,6 @@ class SanityTestCase(unittest.TestCase):
         self._server_instance = self._create_server_instance()
         self._await_server_up()
 
-
     def tearDown(self):
         self._logger.critical('Tearing down test: {0}'.format(self._testMethodName))
         self._kill_server_instance()
