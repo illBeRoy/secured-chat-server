@@ -13,11 +13,16 @@ class Endpoint(server.Endpoint):
         body_parser.add_argument('password', help='desired password', required=True)
         body_parser.add_argument('private_key', help='secret rsa key of user (encrypted)', required=True)
         body_parser.add_argument('public_key', help='public rsa key of user (plain)', required=True)
+        body_parser.add_argument('info', help='user private info, such as contacts list')
         body = body_parser.parse_args()
 
         # create user
         try:
-            user = resources.user.models.User(body.username, body.password, body.private_key, body.public_key)
+            user = resources.user.models.User(body.username,
+                                              body.password,
+                                              body.private_key,
+                                              body.public_key,
+                                              info=body.info)
             self.session.add(user)
             self.session.commit()
 

@@ -219,7 +219,8 @@ class SanityTestCase(unittest.TestCase):
         me = user.send('get', '/users/me')
         self._assert_response(me, {'username': 'roysom',
                                    'public_key': 'public_key',
-                                   'private_key': 'private_key'})
+                                   'private_key': 'private_key',
+                                   'info': ''})
 
     def test_registration_multiple(self):
         '''
@@ -234,6 +235,21 @@ class SanityTestCase(unittest.TestCase):
 
         self._logger.info('Attempting to register user with used name')
         self._register_user('roysom', 'apples', confirm_response=False, expected_status=400)
+
+    def test_set_personal_info(self):
+        user = self._register_user('roysom', 'bananas')
+
+        self._logger.info('Updating personal info')
+        response = user.send('post', '/users/info', body={'info': 'i am bea, i like tea'})
+        self._assert_response(response,
+                              {'username': 'roysom', 'info': 'i am bea, i like tea'},
+                              ignore_fields=('id', 'private_key', 'public_key'))
+
+        self._logger.info('Assuring persistence by getting own user profile')
+        response = user.send('get', '/users/me')
+        self._assert_response(response,
+                              {'username': 'roysom', 'info': 'i am bea, i like tea'},
+                              ignore_fields=('id', 'private_key', 'public_key'))
 
     def test_user_search(self):
         '''

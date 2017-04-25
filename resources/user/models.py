@@ -12,13 +12,17 @@ class User(server.Model):
     salt = server.ModelField(server.ModelTypes.String(44))
     private_key = server.ModelField(server.ModelTypes.String(4096))
     public_key = server.ModelField(server.ModelTypes.String(4096))
+    info = server.ModelField(server.ModelTypes.String(4096))
 
     renders_fields = ['username', 'public_key']
+    renders_private_fields = ['private_key', 'info']
+
     assert_fail_reasons = 'bad username, should be alphanumeric, not shorter than 3 and not longer than 32 characters'
     integrity_fail_reasons = 'username is already in use'
+
     allowed_usernames = re.compile('^[a-zA-Z0-9_-]{3,32}$')
 
-    def __init__(self, username, password, private_key, public_key):
+    def __init__(self, username, password, private_key, public_key, info=None):
         assert User.allowed_usernames.match(username)
 
         self.username = username
@@ -26,6 +30,7 @@ class User(server.Model):
         self.password = self._hash_with_salt(password, self.salt)
         self.private_key = private_key
         self.public_key = public_key
+        self.info = info or ''
 
     def check_password(self, password):
         if self.password == self._hash_with_salt(password, self.salt):
@@ -37,7 +42,8 @@ class User(server.Model):
         user = super(User, self).render(**kwargs)
 
         if with_private_fields:
-            user['private_key'] = self.private_key
+            for field in User.renders_private_fields:
+                user[field] = getattr(self, field)
 
         return user
 
