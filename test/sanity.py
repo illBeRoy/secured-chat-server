@@ -17,6 +17,10 @@ class SanityTestCase(unittest.TestCase):
      1. registration and user naming rules
      2. messaging
      3. access control and authentication
+     
+    In order to perform the tests, an sqlite database file is created, and the server executable is being
+    run as subprocess. Requests are then being made to the local server and the results are asserted.
+    After each test, both the server and the database are being tore down, in order to prevent contamination.
     '''
 
     executable_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..')
