@@ -240,14 +240,20 @@ class SanityTestCase(unittest.TestCase):
         self._logger.info('Attempting to register user with used name')
         self._register_user('roysom', 'apples', confirm_response=False, expected_status=400)
 
-    def test_set_personal_info(self):
+    def test_update_user(self):
+        '''
+        Tests updating own user profile.
+        '''
         user = self._register_user('roysom', 'bananas')
 
-        self._logger.info('Updating personal info')
-        response = user.send('post', '/users/info', body={'info': 'i am bea, i like tea'})
+        self._logger.info('Updating user')
+        response = user.send('post', '/users/me', body={'info': 'i am bea, i like tea'})
         self._assert_response(response,
                               {'username': 'roysom', 'info': 'i am bea, i like tea'},
                               ignore_fields=('id', 'private_key', 'public_key'))
+
+        self._logger.info('Sending an empty user update request, expecting it to fail')
+        user.send('post', '/users/me', expected_status=400)
 
         self._logger.info('Assuring persistence by getting own user profile')
         response = user.send('get', '/users/me')
@@ -331,7 +337,7 @@ class SanityTestCase(unittest.TestCase):
         self._logger.info('Testing anonymous access attempts')
 
         endpoints = {'/users': {'post': 400}, # we're not gonna supply the right body here, so 400
-                     '/users/me': {'get': 401},
+                     '/users/me': {'get': 401, 'post': 401},
                      '/users/friends': {'get': 401},
                      '/messages': {'post': 401, 'get': 401, 'delete': 401}}
 
