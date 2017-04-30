@@ -38,7 +38,11 @@ class _Base(object):
         output = {}
 
         for field in self.renders_fields + ['id']:
-            output[field] = getattr(self, field)
+            field_value = getattr(self, field)
+            if hasattr(field_value, 'render') and isinstance(field_value.render, callable):
+                output[field] = field_value.render()
+            else:
+                output[field] = field_value
 
         return output
 

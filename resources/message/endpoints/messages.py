@@ -16,7 +16,7 @@ class Endpoint(server.Endpoint):
 
         # fetch all messages
         messages = self.session.query(resources.message.models.Message) \
-                    .filter(resources.message.models.Message.to_user == self.auth.user.id) \
+                    .filter(resources.message.models.Message.to_user == self.auth.user.username) \
                     .order_by(resources.message.models.Message.sent_at.desc()) \
                     .limit(100) \
                     .all()
@@ -38,22 +38,20 @@ class Endpoint(server.Endpoint):
             user = self.session.query(resources.user.models.User) \
                 .filter(resources.user.models.User.username == body.recipient) \
                 .limit(1).all()[0]
-        except Exception as err:
+        except Exception:
             raise server.RestfulException(404, 'user not found')
 
-        # check that user is not sending to himself
-        if user.id == self.auth.user.id:
-            raise server.RestfulException(400, 'cannot send message to self')
-
         # create message
-        message = resources.message.models.Message(self.auth.user.id, user.id, body.contents)
-        self.session.add(message)
-
-        # attempt to commit
         try:
+            message = resources.message.models.Message(self.auth.user.username, user.username, body.contents)
             self.session.commit()
+            self.session.add(message)
+
         except server.IntegrityError:
             raise server.RestfulException(400, resources.message.models.Message.integrity_fail_reasons)
+
+        except AssertionError:
+            raise server.RestfulException(400, resources.message.models.Message.assert_fail_reasons)
 
         # return success
         return message.render(), 201
@@ -70,7 +68,7 @@ class Endpoint(server.Endpoint):
             raise server.RestfulException(400, 'invalid field "until": valid unix timestamp expected')
 
         deleted_count = self.session.query(resources.message.models.Message) \
-                                    .filter(resources.message.models.Message.to_user == self.auth.user.id,
+                                    .filter(resources.message.models.Message.to_user == self.auth.user.username,
                                             resources.message.models.Message.sent_at < query_timestamp) \
                                     .delete()
 

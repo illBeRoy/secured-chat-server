@@ -7,7 +7,9 @@ import server
 
 class User(server.Model):
 
-    username = server.ModelField(server.ModelTypes.String(32), unique=True)
+    UsernameType = server.ModelTypes.String(32)
+
+    username = server.ModelField(UsernameType, unique=True)
     password = server.ModelField(server.ModelTypes.String(44))
     salt = server.ModelField(server.ModelTypes.String(44))
     private_key = server.ModelField(server.ModelTypes.String(4096))

@@ -292,14 +292,16 @@ class SanityTestCase(unittest.TestCase):
 
         # make sure only one message arrived, and that it contains the right contents
         self.assertEqual(len(aviv_messages['messages']), 1)
-        self._assert_response(aviv_messages['messages'][0], {'contents': 'foo'}, ignore_fields=('id', 'sent_at'))
+        self._assert_response(aviv_messages['messages'][0],
+                              {'contents': 'foo', 'from_user': 'roysom', 'to_user': 'avivbh'},
+                              ignore_fields=('id', 'sent_at'))
 
         # ensure that nadav has no messages, since no one sent him anything
         self._logger.info('Making sure that nadav is lonely and has no incoming messages')
         nuni_messages = users['banuni'].send('get', 'messages')
         self.assertEqual(len(nuni_messages['messages']), 0)
 
-        # wait a little bit and send another message to aviv
+        # send another message to aviv
         self._logger.info('Sending another message from roysom to avivbh')
         users['roysom'].send('post', '/messages', body={'recipient': 'avivbh', 'contents': 'bar'})
 
@@ -313,7 +315,9 @@ class SanityTestCase(unittest.TestCase):
 
         # make sure that only the last message arrived, and that it contains the right contents
         self.assertEqual(len(aviv_messages['messages']), 1)
-        self._assert_response(aviv_messages['messages'][0], {'contents': 'bar'}, ignore_fields=('id', 'sent_at'))
+        self._assert_response(aviv_messages['messages'][0],
+                              {'contents': 'bar', 'from_user': 'roysom', 'to_user': 'avivbh'},
+                              ignore_fields=('id', 'sent_at'))
 
     def test_authentication_policy(self):
         '''
