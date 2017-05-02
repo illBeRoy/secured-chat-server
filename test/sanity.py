@@ -240,14 +240,20 @@ class SanityTestCase(unittest.TestCase):
         self._logger.info('Attempting to register user with used name')
         self._register_user('roysom', 'apples', confirm_response=False, expected_status=400)
 
-    def test_set_personal_info(self):
+    def test_update_user(self):
+        '''
+        Tests updating own user profile.
+        '''
         user = self._register_user('roysom', 'bananas')
 
-        self._logger.info('Updating personal info')
-        response = user.send('post', '/users/info', body={'info': 'i am bea, i like tea'})
+        self._logger.info('Updating user')
+        response = user.send('post', '/users/me', body={'info': 'i am bea, i like tea'})
         self._assert_response(response,
                               {'username': 'roysom', 'info': 'i am bea, i like tea'},
                               ignore_fields=('id', 'private_key', 'public_key'))
+
+        self._logger.info('Sending an empty user update request, expecting it to fail')
+        user.send('post', '/users/me', expected_status=400)
 
         self._logger.info('Assuring persistence by getting own user profile')
         response = user.send('get', '/users/me')
@@ -286,14 +292,16 @@ class SanityTestCase(unittest.TestCase):
 
         # make sure only one message arrived, and that it contains the right contents
         self.assertEqual(len(aviv_messages['messages']), 1)
-        self._assert_response(aviv_messages['messages'][0], {'contents': 'foo'}, ignore_fields=('id', 'sent_at'))
+        self._assert_response(aviv_messages['messages'][0],
+                              {'contents': 'foo', 'from_user': 'roysom', 'to_user': 'avivbh'},
+                              ignore_fields=('id', 'sent_at'))
 
         # ensure that nadav has no messages, since no one sent him anything
         self._logger.info('Making sure that nadav is lonely and has no incoming messages')
         nuni_messages = users['banuni'].send('get', 'messages')
         self.assertEqual(len(nuni_messages['messages']), 0)
 
-        # wait a little bit and send another message to aviv
+        # send another message to aviv
         self._logger.info('Sending another message from roysom to avivbh')
         users['roysom'].send('post', '/messages', body={'recipient': 'avivbh', 'contents': 'bar'})
 
@@ -307,7 +315,9 @@ class SanityTestCase(unittest.TestCase):
 
         # make sure that only the last message arrived, and that it contains the right contents
         self.assertEqual(len(aviv_messages['messages']), 1)
-        self._assert_response(aviv_messages['messages'][0], {'contents': 'bar'}, ignore_fields=('id', 'sent_at'))
+        self._assert_response(aviv_messages['messages'][0],
+                              {'contents': 'bar', 'from_user': 'roysom', 'to_user': 'avivbh'},
+                              ignore_fields=('id', 'sent_at'))
 
     def test_authentication_policy(self):
         '''
@@ -331,7 +341,7 @@ class SanityTestCase(unittest.TestCase):
         self._logger.info('Testing anonymous access attempts')
 
         endpoints = {'/users': {'post': 400}, # we're not gonna supply the right body here, so 400
-                     '/users/me': {'get': 401},
+                     '/users/me': {'get': 401, 'post': 401},
                      '/users/friends': {'get': 401},
                      '/messages': {'post': 401, 'get': 401, 'delete': 401}}
 
