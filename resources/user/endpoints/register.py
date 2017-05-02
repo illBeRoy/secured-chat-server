@@ -33,4 +33,4 @@ class Endpoint(server.Endpoint):
             raise server.RestfulException(400, resources.user.models.User.assert_fail_reasons)
 
         # return success
-        return user.render(), 201
+        return user.render(with_private_fields=True), 201
