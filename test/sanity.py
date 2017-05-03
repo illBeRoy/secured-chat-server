@@ -192,7 +192,9 @@ class SanityTestCase(unittest.TestCase):
         res = self._send_request('post', '/users', body=req, **kwargs)
 
         if confirm_response:
-            self._assert_response(res, {'username': username, 'public_key': 'public_key'})
+            self._assert_response(res,
+                                  {'username': username, 'public_key': 'public_key', 'private_key': 'private_key'},
+                                  ignore_fields=['id', 'info'])
             return SanityTestCase.AuthenticatedUser(data=res,
                                                     send=self._send_request_as(username, password))
         else:
