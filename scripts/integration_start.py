@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
     os.makedirs(assets_path)
 
-    subprocess.Popen('source ./venv/bin/activate && ./start.py -p {0} -db "sqlite:///{1}"'.format(server_port,
+    subprocess.call('source ./venv/bin/activate && ./start.py -p {0} -db "sqlite:///{1}"'.format(server_port,
                                                                                                   os.path.join(assets_path, 'db.sqlite')),
                      shell=True,
-                     cwd=executable_path).communicate()
+                     cwd=executable_path)
