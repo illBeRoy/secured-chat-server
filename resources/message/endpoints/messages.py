@@ -45,7 +45,7 @@ class Endpoint(server.Endpoint):
         try:
             message = resources.message.models.Message(self.auth.user.username, user.username, body.contents)
             self.session.add(message)
-            # self.session.commit()
+            self.session.commit()
 
         except server.IntegrityError:
             raise server.RestfulException(400, resources.message.models.Message.integrity_fail_reasons)
