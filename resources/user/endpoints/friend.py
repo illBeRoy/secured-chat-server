@@ -17,7 +17,7 @@ class Endpoint(server.Endpoint):
             user = self.session.query(resources.user.models.User) \
                 .filter(resources.user.models.User.username == querystring.username) \
                 .limit(1).all()[0]
-        except Exception as err:
+        except Exception:
             raise server.RestfulException(404, 'user not found')
 
         return user.render()

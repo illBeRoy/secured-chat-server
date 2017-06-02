@@ -21,6 +21,11 @@ class _Base(object):
     def __tablename__(cls):
         return '{0}s'.format(cls.__name__.lower())
 
+    # autoincrement should not reuse old ids, even on sqlite
+    @_declerative.declared_attr
+    def __table_args__(cls):
+        return {'sqlite_autoincrement': True}
+
     # inheriting classes can override this list with the name of fields it should render
     renders_fields = []
 
@@ -29,7 +34,7 @@ class _Base(object):
     integrity_fail_reasons = ''
 
     # all models have an auto-incrementing integer id as primary key
-    id = ModelField(ModelTypes.Integer, primary_key=True, autoincrement=True)
+    id = ModelField(ModelTypes.Integer, primary_key=True, autoincrement=True, )
 
     def render(self, **kwargs):
         '''
